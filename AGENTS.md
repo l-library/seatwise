@@ -6,6 +6,7 @@ Working rules for AI agents in this repo. Human-facing version (Chinese): [CONVE
 
 ```
 seatwise/
+├── .agents/    project-level agent skills, checked in and shared by all members
 ├── backend/    Spring Boot (Java 25, Maven Wrapper), package root com.seatwise
 │   ├── src/main/java/com/seatwise/...   source, layered controller → service → repository
 │   ├── src/main/resources/              config (application.yaml)
@@ -129,6 +130,7 @@ Title: `<type>: <summary>` — `bug: concurrent booking not blocked at peak`, `f
 - Concurrency: booking state changes run in a DB transaction with row locks; release operations are idempotent; timeout and grace period are configurable.
 - The LLM only queries and proposes. Consequential actions (booking, deducting credit) require explicit user confirmation. Core flows work without any LLM.
 - Privacy: booking data stays in-domain; assistant output must never reveal other users' bookings.
+- Agent skills: `.agents/` is checked into the repo as part of member collaboration — never gitignore it. Adding a project-level skill starts with an issue (motivation / what the skill does / acceptance criteria) and agreement before the PR.
 
 ### Done means verified
 

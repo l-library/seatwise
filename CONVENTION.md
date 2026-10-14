@@ -6,6 +6,7 @@
 
 ```
 seatwise/
+├── .agents/    项目级 agent skills，随仓库提交，全体成员共享
 ├── backend/    Spring Boot 后端（Java 25，Maven Wrapper，包根 com.seatwise）
 │   ├── src/main/java/com/seatwise/...   后端源码
 │   ├── src/main/resources/              配置（application.yaml）
@@ -156,6 +157,7 @@ uv run main.py      # 运行脚本
 - 并发正确性：预约状态变更走数据库事务 + 行锁，释放操作幂等，超时与宽限期可配置。
 - LLM 只做查询与提议；订座、扣信用等后果性操作必须经用户确认；核心流程在没有 LLM 时也要可用。
 - 隐私：预约数据不出域，对话中不泄露他人预约信息。
+- Agent skills：`.agents/` 随仓库提交，是项目成员协作的一部分，不进 `.gitignore`；新增项目级 skill 必须先开 issue（动机 / skill 做什么 / 验收标准），讨论通过后再提 PR。
 
 ### 完成标准
 
