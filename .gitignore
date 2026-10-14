@@ -1,0 +1,7 @@
+# Editor
+.vs/
+.idea/
+.vscode/
+
+# Env
+.env/

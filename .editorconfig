@@ -1,0 +1,24 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+
+# Web 前端与配置文件：2 空格
+[*.{ts,tsx,js,jsx,json,css,html,yml,yaml}]
+indent_size = 2
+
+# Java / Python / Maven XML：4 空格
+[*.{java,py,xml}]
+indent_size = 4
+
+# Markdown 行尾空格有意义（硬换行），不去除
+[*.md]
+trim_trailing_whitespace = false
+
+# Windows 批处理必须 CRLF（与 .gitattributes 一致）
+[*.{bat,cmd}]
+end_of_line = crlf
