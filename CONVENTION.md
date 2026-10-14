@@ -6,6 +6,7 @@
 
 ```
 seatwise/
+├── .agents/    项目级 agent skills，入库并由全体成员共享
 ├── backend/    Spring Boot 后端（Java 25，Maven Wrapper，包根 com.seatwise）
 │   ├── src/main/java/com/seatwise/...   后端源码
 │   ├── src/main/resources/              配置（application.yaml）
@@ -20,6 +21,7 @@ seatwise/
 - backend 按 `controller → service → repository` 分层，跨层直接调用，不绕层。
 - frontend 按功能组织组件与页面，接口调用集中管理，组件文件名 PascalCase。
 - ml 存放离线训练与数据脚本，不进入运行时链路；可复用的预测能力经 backend 接口暴露。
+- `.agents/` 永远不进 `.gitignore`：它是仓库的一部分，也是成员协作的一部分，所有人与 agent 共用。
 - 接口契约放 OpenAPI 文档（Apifox 维护），契约先行：先改契约，再改实现。
 - 部署用 Docker Compose（规划中），配置文件放在仓库根目录。
 
@@ -95,6 +97,7 @@ uv run main.py      # 运行脚本
 - Bug 报告：环境与版本 / 复现步骤 / 期望结果 / 实际结果 / 日志或截图。
 - Feature：动机 / 方案概述 / 验收标准 / 边界（明确不做什么）。
 - 新功能、跨模块改动、行为变更：先开 issue 讨论再动手。
+- 新增项目级 skill（`.agents/` 下）：先开 issue 讨论，达成一致后再落地。
 
 ### 3.4 PR
 

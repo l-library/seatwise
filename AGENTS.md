@@ -6,6 +6,7 @@ Working rules for AI agents in this repo. Human-facing version (Chinese): [CONVE
 
 ```
 seatwise/
+├── .agents/    project-level agent skills, versioned and shared by all members
 ├── backend/    Spring Boot (Java 25, Maven Wrapper), package root com.seatwise
 │   ├── src/main/java/com/seatwise/...   source, layered controller → service → repository
 │   ├── src/main/resources/              config (application.yaml)
@@ -16,6 +17,7 @@ seatwise/
 ```
 
 - `ml/` is offline training and data scripting, never in the runtime path; capabilities reach users through backend endpoints.
+- `.agents/` is never gitignored: it is part of the repo and of member collaboration, shared by every human and agent working here.
 - API contracts live in the OpenAPI doc (Apifox). Contract-first: change the contract, then the implementation, both in the same PR.
 - Deployment is Docker Compose (planned); compose files go at the repo root.
 
@@ -68,6 +70,7 @@ Title: `<type>: <summary>` — `bug: concurrent booking not blocked at peak`, `f
 - Bug: environment/versions / reproduction steps / expected / actual / logs or screenshots.
 - Feature: motivation / approach sketch / acceptance criteria / explicit non-goals.
 - New features, cross-module changes, and behavior changes start with an issue.
+- Adding a project-level skill under `.agents/` starts with an issue — discuss and agree there before the skill lands.
 
 ### Pull requests
 
