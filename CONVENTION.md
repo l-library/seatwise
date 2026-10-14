@@ -36,15 +36,17 @@ pnpm install        # 安装依赖（用 pnpm，不要混用 npm/yarn）
 pnpm dev            # 本地开发
 pnpm build          # 类型检查 + 构建（tsc -b && vite build）
 pnpm lint           # oxlint
+pnpm test           # vitest（组件测试用 Testing Library）
 pnpm preview        # 预览构建产物
 ```
 
-测试暂无脚手架；引入时统一用 vitest，并在 `package.json` 增加 `test` script。
+测试用 vitest（jsdom 环境），组件测试配 Testing Library。
 
 ### backend
 
 ```bash
 ./mvnw spring-boot:run   # 本地开发（Windows 用 mvnw.cmd）
+./mvnw checkstyle:check  # Checkstyle 静态检查（规则在 checkstyle.xml）
 ./mvnw test              # JUnit 5 测试
 ./mvnw package           # 打包
 ```

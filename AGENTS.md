@@ -29,9 +29,9 @@ Prerequisites: JDK 25, Node.js ≥ 24 with pnpm, Python 3.14 with uv, MySQL 8 (n
 |---|---|---|---|
 | install | `pnpm install` | — (wrapper downloads deps) | `uv sync` |
 | run | `pnpm dev` | `./mvnw spring-boot:run` | `uv run main.py` |
-| lint | `pnpm lint` (oxlint) | — | — |
+| lint | `pnpm lint` (oxlint) | `./mvnw checkstyle:check` (Checkstyle) | — |
 | build | `pnpm build` (`tsc -b && vite build`) | `./mvnw package` | — |
-| test | none yet — add vitest + a `test` script when introduced | `./mvnw test` (JUnit 5) | none yet — pytest as dev dependency when introduced |
+| test | `pnpm test` (vitest + Testing Library) | `./mvnw test` (JUnit 5) | none yet — pytest as dev dependency when introduced |
 
 On Windows use `mvnw.cmd`. Use pnpm only in `frontend/`; mixing npm/yarn pollutes the lockfile.
 
