@@ -4,4 +4,17 @@
 .vscode/
 
 # Env
-.env/
+.env
+
+# Local scratch (extracted reference material, not part of the repo)
+tmp/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Evidence raw data (downloaded, never committed)
+docs/evidence/dataverse-wifi/
+docs/evidence/kth/
+docs/evidence/hkust_calendar/
