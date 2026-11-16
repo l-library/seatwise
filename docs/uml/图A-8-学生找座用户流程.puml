@@ -1,0 +1,61 @@
+@startuml
+!pragma layout smetana
+
+title 图 A-8  用户流程：学生从“会不会有座”到“订到座”
+
+skinparam defaultFontName "DengXian"
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam activity {
+  BackgroundColor #F4F7FC
+  BorderColor #55607A
+  FontColor #1F2A40
+  DiamondBackgroundColor #FFF6E9
+  DiamondBorderColor #E08A3C
+}
+skinparam note {
+  BackgroundColor #FFF6E9
+  BorderColor #E08A3C
+  FontColor #5A3A18
+}
+skinparam arrow {
+  Color #55607A
+  FontColor #444444
+}
+
+start
+:【学生】选择日期、到达时间、停留时长;
+:【系统】读 D2 找座概率\n区域 × 时段 × 数据时间 × 置信分档;
+if (数据充分且模型可用？) then (是)
+  :【系统】座位图着色 + 置信分档;
+  if (目标区域概率低于阈值？) then (是)
+    :【系统】给出 ≤ 3 个错峰 / 换区候选\n附依据：概率、步行距离;
+    if (【学生】接受建议？) then (是)
+      :【学生】改选候选区域;
+    else (否)
+      :【学生】保持原选择;
+    endif
+  else (否)
+    :【学生】直接选择具体座位;
+  endif
+else (否)
+  :【系统】隐藏数字\n显示“暂无可靠预测”与实时座位图;
+  :【学生】按实时座位图人工选择;
+endif
+:【系统】事务内校验冲突 / 信用 / 时长 / 配额;
+if (校验通过？) then (是)
+  :【系统】锁座 + 生成待签到预约;
+  :【学生】宽限期内签到;
+  stop
+else (否)
+  :【系统】拒绝并给出下一步动作\n改时段 / 提高信用 / 加入候补;
+  if (【学生】加入候补？) then (是)
+    :【系统】进入候补队列\n有人释放则按序补位并通知;
+  else (否)
+    :【学生】结束;
+  endif
+  stop
+endif
+
+@enduml

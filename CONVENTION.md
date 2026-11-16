@@ -13,17 +13,19 @@ seatwise/
 │   └── src/test/java/...                测试（JUnit 5，目录结构与源码一一对应）
 ├── frontend/   React 前端（React 19 + TypeScript 6 + Vite 8，包管理 pnpm）
 │   └── src/                             页面、组件、接口调用
-└── ml/         占用预测模型与数据脚本（Python 3.14，uv + pyproject）
+├── ml/         离线训练与数据脚本（Python 3.14，uv + pyproject），不进运行时
+└── docs/       需求基线、设计正文、实测证据与图源
 ```
 
 分层约定：
 
 - backend 按 `controller → service → repository` 分层，跨层直接调用，不绕层。
 - frontend 按功能组织组件与页面，接口调用集中管理，组件文件名 PascalCase。
-- ml 存放离线训练与数据脚本，不进入运行时链路；可复用的预测能力经 backend 接口暴露。
+- ml 存放离线训练与数据脚本，不进入运行时链路；预测能力以 ONNX 工件与特征契约交给 api 打分。
+- docs 存放需求基线 `SRS.md`、设计正文 `DESIGN.md`、实测证据与图源；代码与评审引用的条款号（7.6.1、R8、ADR-3）以这两份文件为准。只收 Markdown、图与 PlantUML 源，PDF、ppt 与原始数据不入库。
 - `.agents/` 永远不进 `.gitignore`：它是仓库的一部分，也是成员协作的一部分，所有人与 agent 共用。
 - 接口契约放 OpenAPI 文档（Apifox 维护），契约先行：先改契约，再改实现。
-- 部署用 Docker Compose（规划中），配置文件放在仓库根目录。
+- 部署用 Docker Compose（规划中）：web、api、worker、MySQL 四个运行时容器加一个工件卷，配置文件放在仓库根目录。
 
 ## 2. 开发环境
 
@@ -94,7 +96,7 @@ uv run main.py      # 运行脚本
 
 ### 3.3 Issue
 
-标题格式：`<type>: <简述>`，如 `bug: 高峰期并发预约未拦截`、`feat: 对话订座工具调用`。
+标题格式：`<type>: <简述>`，如 `bug: 高峰期并发预约未拦截`、`feat: 候补队列释放即补位`。
 
 - Bug 报告：环境与版本 / 复现步骤 / 期望结果 / 实际结果 / 日志或截图。
 - Feature：动机 / 方案概述 / 验收标准 / 边界（明确不做什么）。
@@ -157,10 +159,15 @@ uv run main.py      # 运行脚本
 
 ### 项目特定
 
+- 需求与设计：`docs/SRS.md` 与 `docs/DESIGN.md` 是基线；行为变更同步改文档，保持条款号可引用。
+- 模块边界：按业务能力分包 —— booking、credit、policy、insight、prediction，加 identity/audit；模块之间只经应用服务接口调用，不跨模块读表。
 - 契约先行：改 REST 接口先改 OpenAPI 文档，再改实现，两侧在同一 PR 内同步。
-- 并发正确性：预约状态变更走数据库事务 + 行锁，释放操作幂等，超时与宽限期可配置。
-- LLM 只做查询与提议；订座、扣信用等后果性操作必须经用户确认；核心流程在没有 LLM 时也要可用。
-- 隐私：预约数据不出域，对话中不泄露他人预约信息。
+- 并发正确性：预约状态变更走数据库事务 + 行锁，释放操作幂等，超时与宽限期可配置；所有写操作使用幂等键 `(业务键, op, version)`。
+- 预测隔离：统计模型与模拟通过只读数据库账号读业务表，只写 `occupancy_prediction`、`waste_estimate`、`simulation_report` 三张结果表；预约、扣分、释放、配额由确定性服务或人执行。
+- 预测输出：概率必带 `zone` / `slot` / `feature_as_of` / `model_version` / `band` / `coverage`；由 WiFi 或门禁推断的人数必须标注“代理口径”；数据或模型不可用时不显示数字，退回规则版。
+- 信用分：只能由只追加的账本派生，接口不得直接写分数，更正追加一条冲正记录。
+- LLM 只保留可选的 L1（一句话 → 检索参数），默认关闭，只回填表单；核心流程在没有 LLM 时也要可用。
+- 隐私：预约数据不出域；任何输出不得泄露他人预约明细，聚合结果最小分组 ≥ 5 人。
 
 ### 完成标准
 

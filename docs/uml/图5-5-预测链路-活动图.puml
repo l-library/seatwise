@@ -1,0 +1,51 @@
+@startuml
+title 图 5-5  预测链路（UML Activity Diagram）
+skinparam defaultFontName "DengXian"
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam activity {
+  BackgroundColor #F4F7FC
+  BorderColor #55607A
+  FontColor #1F2A40
+  DiamondBackgroundColor #FFF7E6
+  DiamondBorderColor #55607A
+  StartColor #2B3550
+  EndColor #2B3550
+  BarColor #2B3550
+}
+skinparam swimlane {
+  BorderColor #55607A
+  TitleFontColor #2B3550
+  BackgroundColor #FAFBFD
+}
+skinparam arrow {
+  Color #55607A
+  FontColor #444444
+}
+
+|数据准备|
+start
+:6 学年历史：进馆 / 预约 / 签到 / 释放;
+:滑动窗口：过去 7 天 + 当日已发生;
+|特征工程|
+:构造特征：周次、时段、区域、考试周、天气;
+|模型训练|
+:离线训练 B1 停留时长 / B2 爽约 / B3 需求;
+|评估门禁|
+:时间切分回测：持续性基线 + 校准曲线;
+if (达标?) then (是)
+  |预测产出|
+  :预测未来 15–120 分钟：分位数与概率;
+  fork
+    :D2 找座概率 → 学生端;
+  fork again
+    :D3 期望浪费 → 配额与政策模拟;
+  end fork
+else (不达标)
+  |评估门禁|
+  :不发布，保留规则版;
+endif
+stop
+
+@enduml

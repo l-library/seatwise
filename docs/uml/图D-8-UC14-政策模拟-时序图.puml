@@ -1,0 +1,57 @@
+@startuml
+title 图 D-8  UC-14 政策效果模拟 · 时序图（模拟不生效）
+
+skinparam defaultFontName "DengXian"
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam sequence {
+  ActorBackgroundColor #E7ECF4
+  ParticipantBackgroundColor #F4F7FC
+  ParticipantBorderColor #55607A
+  LifeLineBorderColor #55607A
+  ArrowColor #55607A
+  ArrowFontColor #444444
+  GroupBorderColor #55607A
+  GroupBackgroundColor #FBFBFC
+}
+skinparam note {
+  BackgroundColor #FFF6E9
+  BorderColor #E08A3C
+  FontColor #5A3A18
+}
+
+actor "场馆管理员" as adm
+participant "web" as web
+participant "PolicyController" as ctl
+participant "SimulationService" as sim
+database "历史事件与结果表\n（readDS）" as hist
+database "simulation_report\n（只追加）" as rep
+participant "PolicyVersion" as pv
+
+adm -> web : 选择参数组合（宽限期 15 → 20 等）
+web -> ctl : POST /simulations
+ctl -> sim : run(baseline = 生效版本,\ncandidate = 草稿参数, window = 4 周）
+sim -> hist : 读取已发生的预约 / 签到 / 释放事件
+hist --> sim : 事件流（只读）
+sim -> sim : 用候选参数重放规则（确定性）\n基线列与候选列并行计算
+sim -> rep : 追加记录\nmetrics + confidence + 数据区间
+rep --> web : 对比表（基线列必须并排）
+web --> adm : 展示"保存为新版本"\n（不是"应用"）
+
+adm -> ctl : 确认保存（需理由 + 二次确认）
+ctl -> pv : 新建版本 + 移动生效指针
+note over pv
+  模拟结果不生效。
+  生效只能经 UC-12：
+  新版本 + 操作者 + 理由，
+  回滚只移动生效指针。
+end note
+
+note over sim
+  数据覆盖 < 4 周时只给方向，
+  不给具体数值。
+  重放不调用模型打分。
+end note
+
+@enduml

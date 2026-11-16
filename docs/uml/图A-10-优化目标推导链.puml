@@ -1,0 +1,63 @@
+@startuml
+!pragma layout smetana
+
+title 图 A-10  优化目标的推导链：从实测约束到可检验目标
+
+skinparam defaultFontName "DengXian"
+skinparam defaultFontSize 11
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam activity {
+  BackgroundColor #F4F7FC
+  BorderColor #55607A
+  FontColor #1F2A40
+  DiamondBackgroundColor #FFF6E9
+  DiamondBorderColor #E08A3C
+}
+skinparam note {
+  BackgroundColor #FFF6E9
+  BorderColor #E08A3C
+  FontColor #5A3A18
+}
+skinparam arrow {
+  Color #55607A
+  FontColor #444444
+}
+
+start
+partition "约束 1 供给侧容量" {
+  :可开放座·分钟固定\n（场馆座位 × 开放时段，短期不可变）;
+}
+partition "约束 2 需求侧结构" {
+  :机会 A：楼层失衡 4.0×\n（最忙 2,077 vs 最闲 517 人次/日）;
+  :机会 B：日内集中 65.4%\n（午后 34.5% + 傍晚前 30.9%）;
+  :机会 C：周内集中\n（周末需求约为工作日的 47%）;
+}
+partition "约束 3 可迁移比例" {
+  :只有愿意换区 / 换时段的到达可被引导\n→ 参数 θ，须由 Part III 自建日志标定\n（假设区间 0.15–0.35）;
+}
+partition "上界推导" {
+  :引导可获得的座·分钟收益\n≤ 可开放座·分钟 × 失衡度 × θ;
+  :超标量收益受爽约率与政策上限约束\n（超发比例 ≤ 超额收益的硬上限）;
+}
+partition "目标（中性档，全部待验证）" {
+  :BG1 有效利用率 ↑ 8%\nBG2 浪费 ↓ 30%\nBG4 峰值找座失败率 ↓ 25%;
+}
+partition "硬约束闸门" {
+  if (回测与校准达标？) then (是)
+    :允许放开超额准入与错峰引导;
+  else (否)
+    :只能展示建议\n不得更改配额与政策;
+  endif
+}
+:上线后用对照区域做归因\n（方向一致率 ≥ 80%）;
+stop
+
+note right
+  每一个目标都链到一条约束：
+  没有约束支撑的目标不写数字。
+  θ 是唯一未标定参数，因此
+  Part III 的第一优先 PoC 即 θ 的测量。
+end note
+
+@enduml

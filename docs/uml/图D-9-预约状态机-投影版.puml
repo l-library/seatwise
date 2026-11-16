@@ -1,0 +1,36 @@
+@startuml
+!pragma layout smetana
+left to right direction
+
+title 图 D-9  预约状态机（投影版）
+
+note bottom of 已爽约 : 扣分入账
+note bottom of 已取消 : 不计分
+note bottom of 已结束 : 结算有效时长
+
+skinparam defaultFontName "DengXian"
+skinparam defaultFontSize 20
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam state {
+  BackgroundColor #F4F7FC
+  BorderColor #55607A
+  FontColor #1F2A40
+}
+skinparam arrow {
+  Color #55607A
+  FontColor #444444
+}
+
+hide empty description
+
+[*] --> 待签到 : 预约成功（锁座）
+待签到 --> 使用中 : 宽限期内签到
+待签到 --> 已爽约 : NO_SHOW
+待签到 --> 已取消 : USER_CANCEL
+使用中 --> 暂离 : 登记暂离
+暂离 --> 使用中 : 时限内返回
+使用中 --> 已结束 : CHECK_OUT / SESSION_END
+暂离 --> 已结束 : AWAY_TIMEOUT
+
+@enduml

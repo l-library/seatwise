@@ -1,0 +1,35 @@
+@startuml
+title 图 5-6  预约状态机（UML State Machine Diagram）
+skinparam defaultFontName "DengXian"
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam state {
+  BackgroundColor #F4F7FC
+  BorderColor #55607A
+  FontColor #1F2A40
+  ArrowColor #55607A
+  StartColor #2B3550
+  EndColor #2B3550
+}
+skinparam arrow {
+  Color #55607A
+  FontColor #444444
+}
+
+hide empty description
+
+[*] --> 待签到 : 预约成功（锁座）
+待签到 --> 使用中 : 宽限期内签到
+待签到 --> 已爽约 : 超过宽限期（UC-06）
+待签到 --> 已取消 : 学生取消
+使用中 --> 暂离 : 登记暂离
+暂离 --> 使用中 : 时限内返回
+暂离 --> 已结束 : 暂离超时释放
+使用中 --> 已结束 : 主动离座 / 到结束时间
+使用中 --> 已结束 : 管理员强制释放
+已爽约 --> [*] : 扣分入账
+已取消 --> [*] : 不计分
+已结束 --> [*] : 结算有效时长
+
+@enduml

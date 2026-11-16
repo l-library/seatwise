@@ -1,0 +1,63 @@
+@startuml
+title 图 5-4  BP-03 从预测到政策的闭环（UML Activity Diagram）
+skinparam defaultFontName "DengXian"
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam activity {
+  BackgroundColor #F4F7FC
+  BorderColor #55607A
+  FontColor #1F2A40
+  DiamondBackgroundColor #FFF7E6
+  DiamondBorderColor #55607A
+  StartColor #2B3550
+  EndColor #2B3550
+  BarColor #2B3550
+}
+skinparam swimlane {
+  BorderColor #55607A
+  TitleFontColor #2B3550
+  BackgroundColor #FAFBFD
+}
+skinparam arrow {
+  Color #55607A
+  FontColor #444444
+}
+skinparam note {
+  BackgroundColor #FFFBEA
+  BorderColor #B8A15A
+  FontColor #4A3F1F
+}
+
+|数据与模型（系统）|
+start
+repeat
+  :行为数据按日聚合;
+  :离线训练 B1–B3;
+  :回测：基线对照 + 校准 + 覆盖率;
+  if (达标?) then (否)
+    :不发布，保留规则版并记录结论;
+  else (是)
+    :生成 D1–D3 并灰度发布;
+    note right
+      超发建议值 → 场馆管理员
+      在 UC-12 显式确认后生效
+    end note
+    |学生|
+    :接收找座概率与建议;
+    |数据与模型（系统）|
+    :监控 MAE / 校准 / 覆盖率 / 延迟;
+    if (劣化超阈值?) then (是)
+      :回滚到上一模型版本;
+    else (否)
+      |场馆管理员|
+      :发起政策模拟（UC-14）;
+      :输出对比表 + 置信说明\n→ 采纳则保存版本;
+      |数据与模型（系统）|
+      :上线后按对照区域归因，偏差回写校准;
+    endif
+  endif
+repeat while (系统持续运行) is (是) -> (否)
+stop
+
+@enduml

@@ -1,0 +1,67 @@
+@startuml
+!pragma layout smetana
+left to right direction
+
+title 图 D-2  api 内两条数据通道与模块边界（C4 L3 简化）
+
+skinparam defaultFontName "DengXian"
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam packageStyle rectangle
+skinparam package {
+  BackgroundColor #FFFFFF
+  BorderColor #55607A
+  FontColor #2B3550
+}
+skinparam component {
+  BackgroundColor #F4F7FC
+  BorderColor #55607A
+  FontColor #1F2A40
+}
+skinparam database {
+  BackgroundColor #EDF1F7
+  BorderColor #55607A
+  FontColor #1F2A40
+}
+skinparam note {
+  BackgroundColor #FFF6E9
+  BorderColor #E08A3C
+  FontColor #5A3A18
+}
+skinparam arrow {
+  Color #55607A
+  FontColor #444444
+}
+
+package "业务道 · 写权限（booking / credit / policy / identity / audit）" as lane1 {
+  component "booking\n预约 / 签到 / 释放 / 状态机" as booking
+  component "credit\n计分 / 申诉" as credit
+  component "policy\n参数版本 / 生效指针" as policy
+  component "identity\n认证 / RBAC" as identity
+  component "audit\n审计 / 留痕" as audit
+}
+
+package "决策道 · 只读权限（insight / prediction）" as lane2 {
+  component "insight\n看板 / 报表 / 指标口径" as insight
+  component "prediction\nONNX 打分 / 结果落库" as pred
+}
+
+database "writeDS\n业务写账号" as wds
+database "readDS\n只读账号\n（读业务视图 / 写 3 张结果表）" as rds
+
+policy --> booking : 阈值读取\n（不反向依赖）
+booking --> credit : 结算事件（reason）
+credit --> audit : 计分留痕
+identity --> audit : 登录审计
+lane1 --> wds
+lane2 -[#E08A3C]-> rds
+lane1 -[hidden]-> lane2
+
+note bottom of lane1
+  预测只经只读仓储接口读业务；
+  结果表无业务外键；
+  booking 不依赖 prediction 的实现。
+end note
+
+@enduml

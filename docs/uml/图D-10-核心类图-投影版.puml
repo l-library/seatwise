@@ -1,0 +1,86 @@
+@startuml
+!pragma layout smetana
+left to right direction
+hide circle
+skinparam classAttributeIconSize 0
+
+title 图 D-10  核心类图（投影版）
+
+skinparam defaultFontName "DengXian"
+skinparam defaultFontSize 18
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam class {
+  BackgroundColor #F4F7FC
+  BorderColor #55607A
+  FontColor #1F2A40
+  HeaderBackgroundColor #E7ECF4
+}
+skinparam note {
+  BackgroundColor #FFF6E9
+  BorderColor #E08A3C
+  FontColor #5A3A18
+}
+skinparam arrow {
+  Color #55607A
+  FontColor #444444
+}
+
+class Zone {
+  zoneCode
+  name
+}
+
+class Seat {
+  label
+  status
+}
+
+class Booking {
+  state
+  settleReason
+}
+
+class BookingEvent {
+  event
+  at
+}
+
+class CreditLedgerEntry {
+  reason
+  delta
+}
+
+class PolicyVersion {
+  version
+  effectiveAt
+}
+
+class PredictionResult {
+  modelVersion
+  featureAsOf
+}
+
+Zone "1" -- "*" Seat
+Seat "1" -- "*" Booking
+Booking "1" -- "*" BookingEvent
+Booking "1" -- "*" CreditLedgerEntry : 结算
+PolicyVersion "1" -- "*" Booking : 阈值快照
+PredictionResult .. Zone : 逻辑关联，无外键
+
+note right of Booking
+  状态只经状态机迁移；
+  唯一索引 (seatId, slotStart)
+end note
+
+note bottom of CreditLedgerEntry
+  只追加，不修改；
+  信用分为派生值
+end note
+
+note right of PolicyVersion
+  生效指针唯一；
+  历史版本只新建
+end note
+
+@enduml

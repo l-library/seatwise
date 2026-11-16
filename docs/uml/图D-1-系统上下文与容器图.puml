@@ -1,0 +1,80 @@
+@startuml
+!pragma layout smetana
+left to right direction
+
+title 图 D-1  Seatwise 系统上下文与容器视图（C4 L1 + L2）
+
+skinparam defaultFontName "DengXian"
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #55607A
+  FontColor #2B3550
+}
+skinparam component {
+  BackgroundColor #F4F7FC
+  BorderColor #55607A
+  FontColor #1F2A40
+}
+skinparam database {
+  BackgroundColor #EDF1F7
+  BorderColor #55607A
+  FontColor #1F2A40
+}
+skinparam node {
+  BackgroundColor #FBFBFC
+  BorderColor #55607A
+  FontColor #2B3550
+}
+skinparam cloud {
+  BackgroundColor #F4F7FC
+  BorderColor #55607A
+  FontColor #1F2A40
+}
+skinparam arrow {
+  Color #55607A
+  FontColor #444444
+}
+
+actor "学生" as stu
+actor "场馆管理员" as adm
+actor "运维" as ops
+
+rectangle "Seatwise 系统边界（C4-L2 容器）" as sys {
+  component "web\nReact 19 + TS + Vite\n学生端 PWA / 管理后台" as web
+  component "api\nSpring Boot 4 · Java 25\n模块化单体\nbooking credit policy\ninsight identity audit" as api
+  component "worker\n定时任务\n超时释放 · 指标聚合\n工件热加载" as worker
+  database "mysql 8\n业务库\n+ 3 张结果表" as db
+  component "工件卷\nONNX + 特征契约\nmodel_version" as art
+}
+
+rectangle "离线训练环境（不在运行时路径）" as off {
+  component "ml/ · Python 3.14\n训练 / 回测 / 导出 ONNX" as ml
+  database "历史行为数据集\n2016–2022 · 约 1420 万条" as data
+}
+
+cloud "统一身份认证 CAS" as cas
+cloud "LLM API\n仅 L1 · 默认关闭" as llm
+
+stu --> web : HTTPS
+adm --> web : HTTPS
+ops --> art : 发布工件
+web --> api : REST / OpenAPI
+api --> cas : 认证
+api --> db : writeDS 写账号
+api -[#E08A3C]-> db : readDS 只读账号
+api --> art : 加载工件
+api -[#E08A3C]-> llm : 出网单向（可选）
+worker --> db : 释放 / 聚合
+worker --> art : 校验工件
+ml --> art : 导出工件
+data --> ml : 训练 / 回测
+
+note bottom of off
+  线上只有 4 个运行时容器；
+  Python 只出现在离线格子。
+end note
+
+@enduml

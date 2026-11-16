@@ -1,0 +1,73 @@
+@startuml
+title 图 5-2  BP-01 预约、使用与释放（UML Activity Diagram）
+skinparam defaultFontName "DengXian"
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam activity {
+  BackgroundColor #F4F7FC
+  BorderColor #55607A
+  FontColor #1F2A40
+  DiamondBackgroundColor #FFF7E6
+  DiamondBorderColor #55607A
+  StartColor #2B3550
+  EndColor #2B3550
+  BarColor #2B3550
+}
+skinparam swimlane {
+  BorderColor #55607A
+  TitleFontColor #2B3550
+  BackgroundColor #FAFBFD
+}
+skinparam arrow {
+  Color #55607A
+  FontColor #444444
+}
+
+|学生|
+start
+repeat
+  :选择区域与时段;
+  :查看座位图与找座概率（D2）;
+  if (该时段有空位?) then (否)
+    :展示错峰建议（C2）;
+    if (接受建议?) then (否)
+      :结束本次找座;
+      stop
+    else (是)
+      :返回重新选择区域与时段;
+    endif
+  else (是)
+    :选座并提交预约;
+  endif
+repeat while (是否继续找座?) is (是) -> (否)
+
+|Seatwise 系统|
+:事务 + 行锁校验\n冲突 / 信用 / 时长 / 配额;
+if (校验通过?) then (否)
+  |学生|
+  :返回失败原因与备选;
+  stop
+else (是)
+  |Seatwise 系统|
+  :创建待签到预约并锁定座位;
+endif
+
+if (宽限期内签到?) then (是)
+  :座位使用中;
+  if (离座方式?) then (主动离座)
+    :立即释放并按实际时长结算;
+  else (暂离超时)
+    |定时任务|
+    :UC-06 超时释放 + 记爽约;
+  endif
+else (否)
+  |定时任务|
+  :UC-06 超时释放 + 记爽约;
+endif
+
+|Seatwise 系统|
+:信用结算与通知;
+stop
+
+@enduml
