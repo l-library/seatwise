@@ -1,0 +1,58 @@
+@startuml
+!pragma layout smetana
+top to bottom direction
+
+title 图 A-6  扩展点：四个端口 + 一个事件出口
+
+skinparam defaultFontName "DengXian"
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam packageStyle rectangle
+skinparam package {
+  BackgroundColor #FFFFFF
+  BorderColor #55607A
+  FontColor #2B3550
+}
+skinparam component {
+  BackgroundColor #F4F7FC
+  BorderColor #55607A
+  FontColor #1F2A40
+}
+skinparam arrow {
+  Color #55607A
+  FontColor #444444
+}
+
+package "外部来源（可替换；演示期用回放与 stub）" as ext {
+  component "门禁 / WiFi / 传感器" as sig
+  component "校历 · 考试周 · 课表" as cal
+  component "ONNX 工件 / 规则版 / 远程模型" as model
+  component "CAS / OAuth / 本地账号" as idp
+}
+
+component "端口与适配层\nOccupancySignalPort  ·  AcademicCalendarPort\nPredictorPort  ·  IdentityProviderPort\nBookingEventPublisher（出口）" as ports
+
+package "Seatwise 核心（模块化单体）" as core {
+  component "prediction\n打分 / 概率分档" as pred
+  component "booking\n预约 / 签到 / 释放" as booking
+  component "policy\n参数版本 / 生效指针" as policy
+  component "credit\n计分 / 申诉" as credit
+  component "insight\n看板 / 报表" as insight
+}
+
+component "通知 / 门禁联动 / 教务" as consumer
+
+sig --> ports : OccupancySignalPort
+cal --> ports : AcademicCalendarPort
+model --> ports : PredictorPort
+idp --> ports : IdentityProviderPort
+ports --> consumer : BookingEventPublisher
+
+ports --> pred
+ports --> booking
+policy --> booking
+policy --> insight
+booking --> credit
+
+@enduml

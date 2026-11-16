@@ -1,0 +1,42 @@
+@startuml
+title 图 5-3  BP-02 超时释放 · 定时任务（UML Activity Diagram）
+skinparam defaultFontName "DengXian"
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam activity {
+  BackgroundColor #F4F7FC
+  BorderColor #55607A
+  FontColor #1F2A40
+  DiamondBackgroundColor #FFF7E6
+  DiamondBorderColor #55607A
+  StartColor #2B3550
+  EndColor #2B3550
+  BarColor #2B3550
+}
+skinparam swimlane {
+  BorderColor #55607A
+  TitleFontColor #2B3550
+  BackgroundColor #FAFBFD
+}
+skinparam arrow {
+  Color #55607A
+  FontColor #444444
+}
+
+|定时任务|
+start
+:调度器每 60 秒触发;
+repeat
+  :查询过期待签到预约（≤ 200 条）;
+  :条件更新：仅当状态 = 待签到;
+  if (更新成功?) then (否)
+    :跳过（已签到 / 已处理）;
+  else (是)
+    :置为已爽约 → 释放座位\n→ 写账本（幂等键：预约号 + 原因）→ 通知;
+  endif
+repeat while (还有待处理记录?) is (是) -> (否)
+:写批次统计与审计;
+stop
+
+@enduml

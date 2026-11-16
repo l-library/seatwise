@@ -1,0 +1,54 @@
+@startuml
+!pragma layout smetana
+
+title 图 A-7  数据增强管线：从原始记录到可信特征（六道质量闸门）
+
+skinparam defaultFontName "DengXian"
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam activity {
+  BackgroundColor #F4F7FC
+  BorderColor #55607A
+  FontColor #1F2A40
+  DiamondBackgroundColor #FFF6E9
+  DiamondBorderColor #E08A3C
+}
+skinparam note {
+  BackgroundColor #FFF6E9
+  BorderColor #E08A3C
+  FontColor #5A3A18
+}
+skinparam arrow {
+  Color #55607A
+  FontColor #444444
+}
+
+start
+:原始记录\n（门禁 / 预约 / WiFi / 学习空间）;
+:闸门 1 完整性\n缺失日期与月份补齐标记;
+:闸门 2 一致性\n分组求和 = Total；楼层求和 ≠ 去重总量（语义差异登记）;
+:闸门 3 有效性\n闭馆期、零值日、封顶伪影;
+:闸门 4 唯一性\n(日期, 层级, 群体) 主键去重;
+if (外部因素可获得？) then (是)
+  :闸门 5 外部因素对齐\n校历 / 考试周 / 假期 / 天气;
+else (否)
+  :标记 coverage = 不足\n不生成数字，退回规则版;
+endif
+:闸门 6 时效性\nfeature_as_of + 数据区间标注;
+:聚合到 区域 × 时段 × 日\n（训练与回测主表）;
+:训练 / 回测 / 校准;
+if (回测达标？) then (是)
+  :发布模型工件\n（模型 + 特征 + 区间 + 指标四位一体）;
+else (否)
+  :不发布\n保留上一版本;
+endif
+stop
+
+note right
+  每次闸门失败都写一条质量记录：
+  维度、影响行数、处置方式。
+  报表与预测页面据此声明 coverage。
+end note
+
+@enduml

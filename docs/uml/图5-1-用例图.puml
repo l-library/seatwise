@@ -1,0 +1,99 @@
+@startuml
+left to right direction
+title 图 5-1  Seatwise 用例图（UML Use Case Diagram）
+skinparam defaultFontName "DengXian"
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam packageStyle rectangle
+skinparam package {
+  BackgroundColor #FFFFFF
+  BorderColor #55607A
+  FontColor #2B3550
+}
+skinparam usecase {
+  BackgroundColor #F4F7FC
+  BorderColor #55607A
+  FontColor #1F2A40
+}
+skinparam actor {
+  BorderColor #55607A
+  FontColor #1F2A40
+}
+skinparam rectangle {
+  BorderColor #55607A
+  FontColor #1F2A40
+}
+skinparam arrow {
+  Color #55607A
+  FontColor #444444
+}
+
+actor "学生" as stu
+actor "场馆管理员" as adm
+actor "运维 / 系统管理员" as ops
+actor "定时任务（系统）" as job
+
+rectangle "统一身份认证（外部系统）" <<external system>> as sso
+
+rectangle "Seatwise 系统边界" {
+  package "预约域" {
+    usecase "UC-01\n浏览座位与找座概率预测" as UC01
+    usecase "UC-02\n预约座位" as UC02
+    usecase "UC-03\n签到 / 落座确认" as UC03
+    usecase "UC-04\n暂离与返回" as UC04
+    usecase "UC-05\n提前离座释放" as UC05
+    usecase "UC-06\n超时未签到释放" as UC06
+    usecase "UC-16\n登录与身份认证" as UC16
+    usecase "UC-17\n一句话描述检索条件（可选）" as UC17
+  }
+  package "治理域" {
+    usecase "UC-07\n查看信用记录与申诉" as UC07
+    usecase "UC-08\n查看个人预约历史" as UC08
+    usecase "UC-13\n处理申诉工单" as UC13
+  }
+  package "决策域" {
+    usecase "UC-09\n接收错峰 / 换座建议" as UC09
+    usecase "UC-11\n运营看板与报表" as UC11
+    usecase "UC-14\n政策效果模拟与归因" as UC14
+  }
+  package "运营域" {
+    usecase "UC-10\n管理座位与区域" as UC10
+    usecase "UC-12\n配置治理政策" as UC12
+    usecase "UC-15\n模型训练、发布与回滚" as UC15
+  }
+}
+
+' 参与者关联
+stu -- UC01
+stu -- UC02
+stu -- UC03
+stu -- UC04
+stu -- UC05
+stu -- UC07
+stu -- UC08
+stu -- UC09
+stu -- UC16
+stu -- UC17
+
+adm -- UC10
+adm -- UC11
+adm -- UC12
+adm -- UC13
+adm -- UC14
+
+ops -- UC12
+ops -- UC15
+ops -- UC16
+
+job -- UC06
+
+' 用例间依赖
+UC16 ..> sso : «use» 认证
+UC01 <.. UC09 : «extend» 推荐
+UC02 <.. UC09 : «extend» 推荐
+UC14 ..> UC11 : «include» 指标与历史数据
+UC01 <.. UC17 : «extend» 回填筛选
+UC02 <.. UC17 : «extend» 回填条件
+
+@enduml

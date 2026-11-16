@@ -13,13 +13,15 @@ seatwise/
 │   └── src/test/java/...                JUnit 5 tests, mirroring source layout
 ├── frontend/   React 19 + TypeScript 6 + Vite 8, package manager pnpm
 │   └── src/                             pages, components, API calls
-└── ml/         occupancy forecasting scripts (Python 3.14, uv + pyproject)
+├── ml/         offline training and data scripting (Python 3.14, uv + pyproject)
+└── docs/       requirement and design baseline: Markdown, figures, PlantUML sources
 ```
 
+- `docs/SRS.md` is the requirement baseline and `docs/DESIGN.md` the design baseline. Clause numbers used in code and reviews (7.6.1, R8, ADR-3) refer to those two files. `docs/` holds sources only — no PDF, ppt, or raw data.
 - `ml/` is offline training and data scripting, never in the runtime path; capabilities reach users through backend endpoints.
 - `.agents/` is never gitignored: it is part of the repo and of member collaboration, shared by every human and agent working here.
 - API contracts live in the OpenAPI doc (Apifox). Contract-first: change the contract, then the implementation, both in the same PR.
-- Deployment is Docker Compose (planned); compose files go at the repo root.
+- Deployment is Docker Compose (planned): web, api, worker and MySQL with an artifact volume; compose files go at the repo root.
 
 ## Environment and commands
 
@@ -65,7 +67,7 @@ On Windows use `mvnw.cmd`. Use pnpm only in `frontend/`; mixing npm/yarn pollute
 
 ### Issues
 
-Title: `<type>: <summary>` — `bug: concurrent booking not blocked at peak`, `feat: conversational booking tool calls`.
+Title: `<type>: <summary>` — `bug: concurrent booking not blocked at peak`, `feat: reservation hold transaction with row lock`.
 
 - Bug: environment/versions / reproduction steps / expected / actual / logs or screenshots.
 - Feature: motivation / approach sketch / acceptance criteria / explicit non-goals.
@@ -128,10 +130,15 @@ Title: `<type>: <summary>` — `bug: concurrent booking not blocked at peak`, `f
 
 ### Project-specific
 
+- Requirements and design: `docs/SRS.md` and `docs/DESIGN.md` are the baseline; change them together with the code and keep clause numbers valid.
+- Module boundaries: one package per capability — booking, credit, policy, insight, prediction, plus identity/audit. Modules call each other through application service interfaces only; no cross-module table reads.
 - Contract-first: update the OpenAPI document before the implementation, both in the same PR.
-- Concurrency: booking state changes run in a DB transaction with row locks; release operations are idempotent; timeout and grace period are configurable.
-- The LLM only queries and proposes. Consequential actions (booking, deducting credit) require explicit user confirmation. Core flows work without any LLM.
-- Privacy: booking data stays in-domain; assistant output must never reveal other users' bookings.
+- Concurrency: booking state changes run in a DB transaction with row locks; release operations are idempotent; timeout and grace period are configurable. Every write uses the idempotency key `(business key, op, version)`.
+- Prediction isolation: models and simulations read business tables through a read-only DB account and write only `occupancy_prediction`, `waste_estimate` and `simulation_report`. Booking, credit, release and quota decisions stay deterministic.
+- Prediction output: a probability always carries `zone` / `slot` / `feature_as_of` / `model_version` / `band` / `coverage`. Values inferred from WiFi or access control are proxy metrics and must say so. When data or models are unavailable, show no numbers and fall back to the rule version.
+- Credit: the score is derived from append-only ledger entries; no endpoint writes it. Corrections append a reversal entry.
+- The LLM is optional (L1: natural language → filter parameters, default off, fills the form only). Core flows work without any LLM.
+- Privacy: booking data stays in-domain; no output may reveal other users' bookings; aggregate outputs use groups of at least 5.
 
 ### Done means verified
 

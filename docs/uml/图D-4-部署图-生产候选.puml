@@ -1,0 +1,85 @@
+@startuml
+!pragma layout smetana
+left to right direction
+
+title 图 D-4  部署图 · 生产候选（VM 版）
+
+skinparam defaultFontName "DengXian"
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam node {
+  BackgroundColor #FBFBFC
+  BorderColor #55607A
+  FontColor #2B3550
+}
+skinparam artifact {
+  BackgroundColor #F4F7FC
+  BorderColor #55607A
+  FontColor #1F2A40
+}
+skinparam database {
+  BackgroundColor #EDF1F7
+  BorderColor #55607A
+  FontColor #1F2A40
+}
+skinparam cloud {
+  BackgroundColor #F4F7FC
+  BorderColor #55607A
+  FontColor #1F2A40
+}
+skinparam arrow {
+  Color #55607A
+  FontColor #444444
+}
+
+actor "浏览器" as user
+cloud "CAS 统一认证" as cas
+cloud "LLM API（可选）" as llm
+
+node "边缘节点" as edge {
+  artifact "Nginx\nTLS 终止 / 反向代理\n静态资源缓存 / 限流" as ng
+}
+
+node "应用主机 A / B" as app {
+  artifact "api ×2\n无状态 · 会话外置" as apiP
+  artifact "worker ×1\n单实例（避免重复扫描）" as workerP
+}
+
+node "数据库主机" as dbHost {
+  database "mysql 8\n业务库 + 3 张结果表\n双账号 readDS / writeDS" as dbP
+  artifact "备份任务\n每日全量 + binlog" as bak
+}
+
+node "可观测主机" as obs {
+  artifact "Prometheus + Grafana\n指标 / 告警 / traceId 串联" as mon
+}
+
+node "工件存储（对象存储或共享卷）" as store {
+  artifact "ONNX 工件目录\n版本化 + 特征契约哈希" as artP
+}
+
+node "训练机（离线）" as train {
+  artifact "ml/ · Python 3.14" as mlP
+}
+
+user --> ng : HTTPS
+ng --> apiP : HTTP（内网）
+apiP --> dbP : JDBC writeDS / readDS
+apiP --> artP : 加载（启动时 + 热加载）
+workerP --> dbP
+workerP --> artP
+apiP --> cas
+apiP --> llm : 出网单向
+mlP --> artP : 发布（带 model_version）
+mon ..> apiP : 抓取指标
+mon ..> dbP : 抓取指标
+
+note bottom of app
+  向生产迁移只有三步：
+  1 配置外部化（12-factor）
+  2 api 保持无状态（会话 / 工件 / 缓存全外置）
+  3 工件卷改为对象存储 + 版本目录
+end note
+
+@enduml

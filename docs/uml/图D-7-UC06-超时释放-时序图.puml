@@ -1,0 +1,58 @@
+@startuml
+title 图 D-7  UC-06 超时未签到释放 · 时序图（至多一次）
+
+skinparam defaultFontName "DengXian"
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam sequence {
+  ActorBackgroundColor #E7ECF4
+  ParticipantBackgroundColor #F4F7FC
+  ParticipantBorderColor #55607A
+  LifeLineBorderColor #55607A
+  ArrowColor #55607A
+  ArrowFontColor #444444
+  GroupBorderColor #55607A
+  GroupBackgroundColor #FBFBFC
+}
+skinparam note {
+  BackgroundColor #FFF6E9
+  BorderColor #E08A3C
+  FontColor #5A3A18
+}
+
+participant "worker\n（定时任务）" as job
+participant "IdempotencyRepo" as idem
+participant "BookingRepository\n（writeDS）" as repo
+participant "CreditService" as credit
+participant "Notifier" as notify
+
+job -> repo : 扫描 待签到 且 now > start + grace\n（每批 ≤ 200 条）
+loop 每条过期预约
+  job -> idem : INSERT (bookingId, reason=NO_SHOW,\npolicyVersion) 唯一索引
+  alt 键已存在（任务重放）
+    idem --> job : 跳过
+  else 首次
+    job -> repo : UPDATE state = 已爽约\nWHERE id = ? AND state = 待签到
+    alt 影响行数 = 0（已签到 / 已被并发处理）
+      repo --> job : 跳过，不重复扣分
+    else 影响行数 = 1
+      repo --> job : 成功
+      job -> credit : 追加账本（reason=NO_SHOW，delta 按规则）
+      job -> notify : 站内通知
+    end
+  end
+end
+
+note over job
+  幂等键 + 条件更新 = 至多一次。
+  中断后可直接重跑整个批次。
+end note
+
+note over credit
+  账本只追加；重复事件由
+  (bookingId, reason) 去重，
+  reason 是 6 类枚举之一。
+end note
+
+@enduml

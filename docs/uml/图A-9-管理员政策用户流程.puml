@@ -1,0 +1,55 @@
+@startuml
+!pragma layout smetana
+
+title 图 A-9  用户流程：管理员从“看数据”到“改政策并验证”
+
+skinparam defaultFontName "DengXian"
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam activity {
+  BackgroundColor #F4F7FC
+  BorderColor #55607A
+  FontColor #1F2A40
+  DiamondBackgroundColor #FFF6E9
+  DiamondBorderColor #E08A3C
+}
+skinparam note {
+  BackgroundColor #FFF6E9
+  BorderColor #E08A3C
+  FontColor #5A3A18
+}
+skinparam arrow {
+  Color #55607A
+  FontColor #444444
+}
+
+start
+:【管理员】打开看板\n利用率 / 浪费 / 找座失败率 / 楼层失衡;
+:【管理员】按区域与时段下钻;
+if (发现瓶颈？) then (是)
+  :【管理员】进入政策配置\n宽限期 / 时长上限 / 超额比例 / 信用阈值 / 候补规则;
+  :【管理员】先做政策模拟\n历史重放 + 当前参数并排;
+  if (数据覆盖 ≥ 4 周？) then (是)
+    :【系统】输出数值对比表\n利用率 / 浪费 / 找座失败率 / 拒绝率 + 置信说明;
+  else (否)
+    :【系统】只给方向，不给数值;
+  endif
+  if (方向一致且风险可接受？) then (是)
+    :【管理员】二次确认\n参数差异 / 影响面 / 回滚方式;
+    :【系统】存为新版本 + 移动生效指针\n记录操作者与理由;
+    :【系统】上线后以对照区域做归因;
+    if (方向与模拟一致？) then (是)
+      :【系统】保留版本，回写模拟器偏差;
+    else (否)
+      :【管理员】一键回滚到上一版本;
+    endif
+  else (否)
+    :【管理员】放弃本次变更;
+  endif
+else (否)
+  :【管理员】导出报表;
+endif
+stop
+
+@enduml

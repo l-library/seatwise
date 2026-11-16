@@ -1,0 +1,160 @@
+@startuml
+!pragma layout smetana
+left to right direction
+hide circle
+skinparam classAttributeIconSize 0
+
+title 图 D-5  Seatwise 领域类图（核心抽象与三条不变式）
+
+skinparam defaultFontName "DengXian"
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam class {
+  BackgroundColor #F4F7FC
+  BorderColor #55607A
+  FontColor #1F2A40
+  HeaderBackgroundColor #E7ECF4
+}
+skinparam note {
+  BackgroundColor #FFF6E9
+  BorderColor #E08A3C
+  FontColor #5A3A18
+}
+skinparam arrow {
+  Color #55607A
+  FontColor #444444
+}
+
+class Zone {
+  zoneCode
+  name
+  openFrom
+  openTo
+}
+
+class Seat {
+  label
+  status
+}
+
+class Booking {
+  id
+  userId
+  slotStart
+  slotEnd
+  state
+  settleReason
+}
+
+class BookingEvent {
+  at
+  event
+  actor
+}
+
+class CreditAccount {
+  userId
+  score
+}
+
+class CreditLedgerEntry {
+  reason
+  delta
+  idempotencyKey
+  at
+}
+
+class PolicyVersion {
+  version
+  params
+  status
+  effectiveAt
+  operator
+  reason
+}
+
+class Appeal {
+  reasonType
+  statement
+  status
+  reply
+}
+
+class IdempotencyRecord {
+  businessKey
+  op
+  version
+  resultRef
+}
+
+class ModelArtifact {
+  version
+  featureContractHash
+  metrics
+  status
+}
+
+class PredictionResult {
+  zoneId
+  slotStart
+  modelVersion
+  featureAsOf
+  p
+  band
+  coverage
+}
+
+class SimulationReport {
+  baselineVersionId
+  candidateParams
+  metrics
+  confidence
+  windowFrom
+  windowTo
+}
+
+class AuditLog {
+  actor
+  action
+  traceId
+  at
+}
+
+Zone "1" -- "*" Seat
+Seat "1" -- "*" Booking
+Booking "1" -- "*" BookingEvent
+Booking "1" -- "*" CreditLedgerEntry : 结算
+CreditAccount "1" -- "*" CreditLedgerEntry
+Booking "0..1" -- "*" Appeal
+PolicyVersion "1" -- "*" SimulationReport : 基线/候选
+ModelArtifact "1" -- "*" PredictionResult : 产出
+Booking .. IdempotencyRecord : 请求去重
+PredictionResult .. Zone : 逻辑关联（无外键）
+
+note right of Booking
+  不变式 1
+  状态只能经状态机服务迁移；
+  唯一索引 (seatId, slotStart)
+  先挡第二次写入。
+end note
+
+note bottom of CreditLedgerEntry
+  不变式 2
+  账本只追加；信用分是
+  账本派生值，不是可写字段。
+end note
+
+note right of PolicyVersion
+  不变式 3
+  生效指针全局唯一；
+  历史版本不可改，只能新建。
+end note
+
+note bottom of PredictionResult
+  与业务类无外键：只有
+  (zoneId, slotStart, modelVersion)。
+  这是"模型不能写业务事实"的模型化表达。
+end note
+
+@enduml

@@ -1,0 +1,64 @@
+@startuml
+title 图 D-6  UC-02 预约座位 · 时序图（并发不超卖）
+
+skinparam defaultFontName "DengXian"
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam sequence {
+  ActorBackgroundColor #E7ECF4
+  ParticipantBackgroundColor #F4F7FC
+  ParticipantBorderColor #55607A
+  LifeLineBorderColor #55607A
+  ArrowColor #55607A
+  ArrowFontColor #444444
+  GroupBorderColor #55607A
+  GroupBackgroundColor #FBFBFC
+}
+skinparam note {
+  BackgroundColor #FFF6E9
+  BorderColor #E08A3C
+  FontColor #5A3A18
+}
+
+actor "学生" as stu
+participant "web" as web
+participant "BookingController" as ctl
+participant "IdempotencyRepo" as idem
+participant "BookingService\n（状态机）" as svc
+participant "SeatRepository\n（writeDS）" as seat
+participant "InsightService\n（readDS 只读）" as insight
+
+stu -> web : 选座并提交
+web -> ctl : POST /bookings\nIdempotency-Key
+ctl -> idem : INSERT (key, op=BOOK)\n唯一索引
+alt 键已存在
+  idem --> ctl : 首次结果
+  ctl --> web : 200 幂等重放（不重复写）
+else 首次请求
+  ctl -> svc : reserve(seatId, slot)
+  activate svc
+  svc -> seat : BEGIN（事务边界只包写入）
+  svc -> seat : INSERT booking\n唯一索引 (seatId, slotStart)
+  alt 唯一索引冲突
+    seat --> svc : 冲突（已被占）
+    svc -> insight : 查同区域找座概率（只读）
+    insight --> svc : 分档概率（仅用于排序备选）
+    svc -> seat : ROLLBACK
+    svc --> web : 409 + 3 个备选座位
+  else 插入成功
+    svc -> seat : SELECT ... FOR UPDATE（锁单座）
+    svc -> svc : 状态断言：可预约 / 信用 / 时长 / 配额\n阈值取自 policy 生效版本
+    svc -> seat : COMMIT
+    svc --> web : 201 + 待签到预约
+  end
+  deactivate svc
+end
+
+note over svc
+  预测值只参与展示与备选排序，
+  不参与校验、不写业务表。
+  冲突返回备选，不做重试风暴。
+end note
+
+@enduml

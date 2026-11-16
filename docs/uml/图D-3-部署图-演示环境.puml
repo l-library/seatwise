@@ -1,0 +1,69 @@
+@startuml
+!pragma layout smetana
+left to right direction
+
+title 图 D-3  部署图 · 演示环境（Docker Compose 单机）
+
+skinparam defaultFontName "DengXian"
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam node {
+  BackgroundColor #FBFBFC
+  BorderColor #55607A
+  FontColor #2B3550
+}
+skinparam artifact {
+  BackgroundColor #F4F7FC
+  BorderColor #55607A
+  FontColor #1F2A40
+}
+skinparam database {
+  BackgroundColor #EDF1F7
+  BorderColor #55607A
+  FontColor #1F2A40
+}
+skinparam cloud {
+  BackgroundColor #F4F7FC
+  BorderColor #55607A
+  FontColor #1F2A40
+}
+skinparam arrow {
+  Color #55607A
+  FontColor #444444
+}
+
+actor "浏览器\n学生 / 管理员" as user
+
+node "应用主机（一台，Compose 编排）" as host {
+  artifact "web\n静态包（Nginx 可选）" as webA
+  artifact "api.jar\nSpring Boot · 双数据源" as apiA
+  artifact "worker\n定时任务容器" as workerA
+  database "mysql 8\n容器 · 数据卷持久化" as dbA
+  artifact "工件卷 ./artifacts\nONNX + 特征契约" as artA
+}
+
+node "训练机（离线，不入 Compose）" as train {
+  artifact "ml/ · Python 3.14\n训练 / 回测 / 导出" as mlA
+}
+
+cloud "CAS 统一认证" as cas
+cloud "LLM API（可选）" as llm
+
+user --> webA : HTTPS
+webA --> apiA : REST
+apiA --> dbA : JDBC writeDS / readDS
+apiA --> artA : 加载
+workerA --> dbA : 释放 / 聚合
+workerA --> artA : 校验后热加载
+mlA --> artA : 发布工件（拷贝 / 版本目录）
+apiA --> cas
+apiA --> llm : 出网单向
+
+note bottom of host
+  演示规模即够用：3 区域 × 约 400 座，
+  峰值 500 并发单机可承受；
+  容器化是为了迁移，不是为了编排。
+end note
+
+@enduml
