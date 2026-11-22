@@ -71,6 +71,7 @@ seatwise/
 
 ## 文档
 
+- [PLAN.md](PLAN.md)：四周实现计划，按周拆任务与验收口径
 - [docs/SRS.md](docs/SRS.md)：需求基线 v3，唯一需求来源
 - [docs/DESIGN.md](docs/DESIGN.md)：设计正文，含 ADR-1～9 与开放问题
 - [docs/evidence/](docs/evidence/)：实测数字、复现口径与已知限制
