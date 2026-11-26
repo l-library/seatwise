@@ -24,7 +24,7 @@ seatwise/
 - ml 存放离线训练与数据脚本，不进入运行时链路；预测能力以 ONNX 工件与特征契约交给 api 打分。
 - docs 存放需求基线 `SRS.md`、设计正文 `DESIGN.md`、实测证据与图源；代码与评审引用的条款号（7.6.1、R8、ADR-3）以这两份文件为准。只收 Markdown、图与 PlantUML 源，PDF、ppt 与原始数据不入库。
 - `.agents/` 永远不进 `.gitignore`：它是仓库的一部分，也是成员协作的一部分，所有人与 agent 共用。
-- 接口契约放 OpenAPI 文档（Apifox 维护），契约先行：先改契约，再改实现。
+- 接口契约以 `docs/openapi.yaml` 为机器可读真源（Apifox 由它导入同步，前端类型由它生成），契约先行：先改契约，再改实现。
 - 部署用 Docker Compose（规划中）：web、api、worker、MySQL 四个运行时容器加一个工件卷，配置文件放在仓库根目录。
 
 ## 2. 开发环境

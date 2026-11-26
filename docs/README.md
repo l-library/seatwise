@@ -7,7 +7,7 @@
 | 路径 | 内容 |
 |---|---|
 | [SRS.md](SRS.md) | 需求基线 v3：定位、用例 UC-01～UC-18、非功能需求 7.1～7.7、R1～R12 变更日志、附录 A 数据来源 |
-| [API.md](API.md) | REST 契约：`/api/v1` 端点总表、错误码、幂等键、状态断言与降级响应，与 Apifox 的 OpenAPI 同源 |
+| [API.md](API.md) | REST 契约：`/api/v1` 端点总表、错误码、幂等键、状态断言与降级响应，机器可读真源为 [openapi.yaml](openapi.yaml)（Apifox 由它导入同步，前端类型由它生成） |
 | [DESIGN.md](DESIGN.md) | 设计正文：第 0 章数据证据、架构与 ADR-1～9、领域模型与用例实现、需求变更 R7～R12、优化目标推导、治理杠杆与扩展点、UI 规范、开放问题 |
 | [evidence/reproduction-notes.md](evidence/reproduction-notes.md) | 实测数字的统计口径、数据获取方式、复现命令、已知限制 |
 | `evidence/*.py`、`evidence/*.json` | 生成第 0 章数字与图表的脚本与结果 |

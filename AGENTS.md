@@ -20,7 +20,7 @@ seatwise/
 - `docs/SRS.md` is the requirement baseline and `docs/DESIGN.md` the design baseline. Clause numbers used in code and reviews (7.6.1, R8, ADR-3) refer to those two files. `docs/` holds sources only — no PDF, ppt, or raw data.
 - `ml/` is offline training and data scripting, never in the runtime path; capabilities reach users through backend endpoints.
 - `.agents/` is never gitignored: it is part of the repo and of member collaboration, shared by every human and agent working here.
-- API contracts live in the OpenAPI doc (Apifox). Contract-first: change the contract, then the implementation, both in the same PR.
+- API contracts live in `docs/openapi.yaml` (Apifox imports from it; frontend types are generated from it). Contract-first: change the contract, then the implementation, both in the same PR.
 - Deployment is Docker Compose (planned): web, api, worker and MySQL with an artifact volume; compose files go at the repo root.
 
 ## Environment and commands
