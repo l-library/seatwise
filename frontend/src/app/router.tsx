@@ -11,25 +11,25 @@ import StudentShell from '../pages/StudentShell'
  * 抽成纯函数便于单测；不用 route middleware（context 类型推导未经实测）。
  */
 export function requireSession(): void {
-    if (readSession() === null) throw redirect('/login')
+  if (readSession() === null) throw redirect('/login')
 }
 
 export const router = createBrowserRouter([
-    { path: '/login', Component: LoginPage },
-    {
-        path: '/student',
-        loader: () => requireSession(),
-        Component: StudentShell,
-    },
-    {
-        path: '/admin',
-        loader: () => requireSession(),
-        Component: AdminShell,
-    },
-    {
-        path: '/ops',
-        loader: () => requireSession(),
-        Component: OpsShell,
-    },
-    { path: '*', Component: NotFoundPage },
+  { path: '/login', Component: LoginPage },
+  {
+    path: '/student',
+    loader: () => requireSession(),
+    Component: StudentShell,
+  },
+  {
+    path: '/admin',
+    loader: () => requireSession(),
+    Component: AdminShell,
+  },
+  {
+    path: '/ops',
+    loader: () => requireSession(),
+    Component: OpsShell,
+  },
+  { path: '*', Component: NotFoundPage },
 ])

@@ -8,14 +8,14 @@ export type Role = 'STUDENT' | 'ADMIN' | 'OPERATOR'
 const STORAGE_KEY = 'seatwise.dev-session'
 
 export function readSession(): Role | null {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw === 'STUDENT' || raw === 'ADMIN' || raw === 'OPERATOR' ? raw : null
+  const raw = localStorage.getItem(STORAGE_KEY)
+  return raw === 'STUDENT' || raw === 'ADMIN' || raw === 'OPERATOR' ? raw : null
 }
 
 export function writeSession(role: Role): void {
-    localStorage.setItem(STORAGE_KEY, role)
+  localStorage.setItem(STORAGE_KEY, role)
 }
 
 export function clearSession(): void {
-    localStorage.removeItem(STORAGE_KEY)
+  localStorage.removeItem(STORAGE_KEY)
 }
