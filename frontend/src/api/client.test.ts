@@ -62,6 +62,17 @@ test('problem+json 错误体映射为带 code 与 trace_id 的 ApiError', async 
   expect(apiError.trace_id).toBe('4b1c9f2e8a7d')
 })
 
+/** 204 响应无法用真实 Response 携带非法残体（构造器对 null-body 状态抛 TypeError），
+ * 用最小假体模拟违规网关：带 json content-type 且残留无法解析的载荷。 */
+function fakeResponse(status: number, contentType: string, text: string): Response {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    headers: new Headers({ 'content-type': contentType }),
+    text: () => Promise.resolve(text),
+  } as unknown as Response
+}
+
 test('204 与空体返回 undefined，Idempotency-Key 由调用方显式传入', async () => {
   const fetchMock = stubFetch(() => new Response(null, { status: 204 }))
 
@@ -91,4 +102,11 @@ test('401 触发 onUnauthorized 回调并抛 ApiError', async () => {
 
   await expect(apiGet('/auth/me', { onUnauthorized })).rejects.toBeInstanceOf(ApiError)
   expect(onUnauthorized).toHaveBeenCalledOnce()
+})
+
+test('204 带 json content-type 与残体时返回 undefined，不尝试 JSON 解析', async () => {
+  stubFetch(() => fakeResponse(204, 'application/json', 'NO_CONTENT'))
+
+  const result = await apiPost('/auth/logout', undefined, { idempotencyKey: 'key-204' })
+  expect(result).toBeUndefined()
 })
