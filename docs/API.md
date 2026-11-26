@@ -1,6 +1,6 @@
 # Seatwise REST API 契约
 
-接口契约的设计源。条款号指向 [SRS.md](SRS.md) 与 [DESIGN.md](DESIGN.md)；实现与 Apifox 里的 OpenAPI 文档跟本文同步改，同一 PR 落地。
+接口契约的设计源。条款号指向 [SRS.md](SRS.md) 与 [DESIGN.md](DESIGN.md)；机器可读真源为 [openapi.yaml](openapi.yaml)（Apifox 由它导入同步，前端类型由它生成），实现与 `docs/openapi.yaml` 跟本文同步改，同一 PR 落地。
 
 排期与模块归属见 [../PLAN.md](../PLAN.md)：身份与预约接口在第一、二周，预测在第三周，政策模拟与开关在第四周。
 
