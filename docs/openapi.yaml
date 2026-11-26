@@ -71,8 +71,7 @@ paths:
         '429':
           $ref: '#/components/responses/RateLimited'
           description: 触发限流（RATE_LIMITED）
-      security:
-        - bearerAuth: []
+      security: []
   /auth/logout:
     post:
       summary: 登出（未验证）
@@ -130,7 +129,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2026-11-23T00:00:00.000Z'
+            example: '2026-11-23'
       responses:
         '200':
           description: 区域列表
@@ -2339,8 +2338,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Health'
           headers: {}
-      security:
-        - bearerAuth: []
+      security: []
 components:
   schemas:
     Problem:
@@ -2689,7 +2687,7 @@ components:
         insufficient_reason:
           allOf:
             - $ref: '#/components/schemas/InsufficientReason'
-          type: 'null'
+          nullable: true
     Alternative:
       description: 错峰或换座候选，概率口径字段同 Prediction，另加步行距离与一句依据（C2）。
       allOf:
@@ -2757,7 +2755,7 @@ components:
         insufficient_reason:
           allOf:
             - $ref: '#/components/schemas/InsufficientReason'
-          type: 'null'
+          nullable: true
         series:
           type: array
           items:
@@ -2825,7 +2823,7 @@ components:
         settle_reason:
           allOf:
             - $ref: '#/components/schemas/SettleReason'
-          type: 'null'
+          nullable: true
         grace_period_minutes:
           type: integer
           example: 15
