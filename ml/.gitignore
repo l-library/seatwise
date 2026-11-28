@@ -1,2 +1,4 @@
 # ml
 .venv/
+.pytest_cache/
+data/
